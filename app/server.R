@@ -7,6 +7,7 @@
 #    http://shiny.rstudio.com/
 #
 ###############################Install Related Packages #######################
+setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 if (!require("shiny")) {
     install.packages("shiny")
     library(shiny)
@@ -35,170 +36,96 @@ if (!require("leafsync")) {
     install.packages("leafsync")
     library(leafsync)
 }
-
-#Data Processing
-total_citi_bike_df = read.csv('../data/citibike_data.csv')
-##compute the daily in and out difference for the station
-total_citi_bike_df$day_diff = total_citi_bike_df$endcount - total_citi_bike_df$startcount
-#assign each column to weekend or weekday
-total_citi_bike_df$weekend_or_weekday = ifelse(total_citi_bike_df$weekday %in% c('Saturday','Sunday'), "Weekend", "Weekday")
-
-#station info
-citi_bike_station_info <- total_citi_bike_df[,c('station_id','station_name','station_longitude','station_latitude')]
-#remove the duplicates based on station id 
-citi_bike_station_info <- citi_bike_station_info[!duplicated(citi_bike_station_info[ , c("station_id")]),]
-
-#split the bike data to pre-covid and covid time period
-citi_bike_pre_covid_df = total_citi_bike_df[difftime(total_citi_bike_df$date,"2019-05-31")<=0,] #2019-05-01 ~ 2019-05-31
-citi_bike_covid_df = total_citi_bike_df[difftime(total_citi_bike_df$date,"2020-04-30")>=0,] #2020-05-01 ~ 2021-05-31
+if (!require("geojsonio")) {
+    install.packages("geojsonio")
+    library(geojsonio)
+}
 
 
-# Define server logic required to draw a histogram
-shinyServer(function(input, output) {
-
-    ## Map Tab section
+# df.arrest.proc <- read.csv("../processed/nyc_arrest_processed.csv")
+nyc.districts.proc <- geojson_read("../processed/nyc_community_districts_processed.geojson",
+                                   what="sp")
+shinyServer(
+function(input, output) {
+#     ####################### Tab 2 Map ##################
+    
+    # inferno
+    pal <- colorNumeric("RdYlBu", NULL)
+    
+    map_base <- leaflet(nyc.districts.proc,options = leafletOptions(minZoom = 10, maxZoom = 13)) %>%
+        setView(-73.9834,40.7504,zoom = 12) %>% addTiles()
     
     output$left_map <- renderLeaflet({
-    
-    #adjust for weekday/weekend effect
-    if (input$adjust_time =='Overall') {
-        leaflet_plt_df <- citi_bike_pre_covid_df %>% 
-                            group_by(station_id) %>%
-                            summarise(total_start_count = sum(startcount),
-                                      total_end_count = sum(endcount),
-                                      total_day_diff = sum(day_diff),
-                                      total_diff_percentage = sum(day_diff)/sum(startcount),
-                            ) %>% left_join(citi_bike_station_info,by='station_id')
-    } else {
-        leaflet_plt_df <- citi_bike_pre_covid_df %>% 
-                            filter(weekend_or_weekday == input$adjust_time) %>%
-                            group_by(station_id) %>%
-                                summarise(total_start_count = sum(startcount),
-                                          total_end_count = sum(endcount),
-                                          total_day_diff = sum(day_diff),
-                                          total_diff_percentage = sum(day_diff)/sum(startcount),
-                                ) %>% left_join(citi_bike_station_info,by='station_id')
-                            } 
+        if (input$adjust_crime=='Monthly average hate crime'){
+            if (input$adjust_population == 'Yes'){
+                map_base %>% addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = 1,
+                                         fillColor = ~pal(hate.pre.per.cap), label = ~paste0(boro_cd)) %>%
+                    addLegend(pal = pal, values = ~hate.pre.per.cap, opacity = 1.0,
+                              labFormat = labelFormat(transform = function(x) round(5e6*x)),title="Monthly total/5M people") %>%
+                    addProviderTiles("CartoDB.Positron") 
+            }else{
+                map_base %>% addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = 1,
+                                         fillColor = ~pal(hate.pre), label = ~paste0(boro_cd)) %>%
+                    addLegend(pal = pal, values = ~hate.pre, opacity = 1.0,
+                              title="Monthly total") %>%
+                    addProviderTiles("CartoDB.Positron")  
+            }
+        }else if (input$adjust_crime == 'Monthly average total arrest') {
+            if (input$adjust_population == 'Yes'){
+                map_base %>% addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = 1,
+                                         fillColor = ~pal(per.cap.pre), label = ~paste0(boro_cd)) %>%
+                    addLegend(pal = pal, values = ~per.cap.pre, opacity = 1.0,
+                              labFormat = labelFormat(transform = function(x) round(1e4*x)),title="Monthly total/10k people") %>%
+                    addProviderTiles("CartoDB.Positron") 
+            }else{
+                map_base %>% addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = 1,
+                                         fillColor = ~pal(total.pre), label = ~paste0(boro_cd)) %>%
+                    addLegend(pal = pal, values = ~total.pre, opacity = 1.0,
+                              title="Monthly total") %>%
+                    addProviderTiles("CartoDB.Positron")  
+            }
+        }
+    })
 
-        
-    map_2019 <- leaflet_plt_df %>%
-         leaflet(options = leafletOptions(minZoom = 11, maxZoom = 13)) %>%
-         addTiles() %>%
-         addProviderTiles("CartoDB.Positron",
-                          options = providerTileOptions(noWrap = TRUE)) %>%
-         setView(-73.9834,40.7504,zoom = 12)
-     
-     if (input$adjust_score == 'start_cnt') {
-         map_2019 %>%
-             addHeatmap(
-                        lng=~station_longitude,
-                        lat=~station_latitude,
-                        intensity=~total_start_count,
-                        max=4000,
-                        radius=8,
-                        blur=10)
-     }else if (input$adjust_score == 'end_cnt') {
-         map_2019 %>%
-             addHeatmap(
-                        lng=~station_longitude,
-                        lat=~station_latitude,
-                        intensity=~total_end_count,
-                        max=4000,
-                        radius=8,
-                        blur=10)
-     } else if (input$adjust_score == 'day_diff_absolute'){
-         map_2019 %>%
-             addHeatmap(
-                        lng=~station_longitude,
-                        lat=~station_latitude,
-                        intensity=~total_day_diff,
-                        max=50,
-                        radius=8,
-                        blur=10)
-         
-     }else if (input$adjust_score == 'day_diff_percentage'){
-         map_2019 %>%
-             addHeatmap(
-                        lng=~station_longitude,
-                        lat=~station_latitude,
-                        intensity=~total_diff_percentage,#change to total day diff percentage
-                        max=0.1,
-                        radius=8,
-                        blur=10)
-         
-     }
-     }) #left map plot
+
     
     output$right_map <- renderLeaflet({
-        #adjust for weekday/weekend effect
-        if (input$adjust_time =='Overall') {
-            leaflet_plt_df <- citi_bike_covid_df %>% 
-                group_by(station_id) %>%
-                summarise(total_start_count = sum(startcount),
-                          total_end_count = sum(endcount),
-                          total_day_diff = sum(day_diff),
-                          total_diff_percentage = sum(day_diff)/sum(startcount),
-                ) %>% left_join(citi_bike_station_info,by='station_id')
-        } else {
-            leaflet_plt_df <- citi_bike_covid_df %>% 
-                filter(weekend_or_weekday == input$adjust_time) %>%
-                group_by(station_id) %>%
-                summarise(total_start_count = sum(startcount),
-                          total_end_count = sum(endcount),
-                          total_day_diff = sum(day_diff),
-                          total_diff_percentage = sum(day_diff)/sum(startcount),
-                ) %>% left_join(citi_bike_station_info,by='station_id')
-        } 
-        #initial the map to plot on
-        map_2020 <- leaflet_plt_df %>%
-            leaflet(options = leafletOptions(minZoom = 11, maxZoom = 13)) %>%
-            addTiles() %>%
-            addProviderTiles("CartoDB.Positron",
-                             options = providerTileOptions(noWrap = TRUE)) %>%
-            setView(-73.9834,40.7504,zoom = 12) 
-        
-        if (input$adjust_score == 'start_cnt') {
-            map_2020 %>%
-                addHeatmap(
-                           lng=~station_longitude,
-                           lat=~station_latitude,
-                            intensity=~total_start_count, #change to total start count
-                            max=4000,
-                            radius=8,
-                           blur=10)
-        }else if (input$adjust_score == 'end_cnt') {
-            map_2020 %>%
-                addHeatmap(
-                           lng=~station_longitude,
-                           lat=~station_latitude,
-                           intensity=~total_end_count,#change to total end count
-                           max=4000,
-                           radius=8,
-                           blur=10)
-        } else if (input$adjust_score == 'day_diff_absolute'){
-            map_2020 %>%
-                addHeatmap(
-                           lng=~station_longitude,
-                           lat=~station_latitude,
-                           intensity=~total_day_diff,#change to total day diff
-                           max=50,
-                           radius=8,
-                           blur=10)
-            
-        }else if (input$adjust_score == 'day_diff_percentage'){
-            map_2020 %>%
-                addHeatmap(
-                           lng=~station_longitude,
-                           lat=~station_latitude,
-                           intensity=~total_diff_percentage,#change to total day diff percentage
-                           max=0.1,
-                           radius=8,
-                           blur=10)
-            
+        if (input$adjust_crime=='Monthly average hate crime'){
+            if (input$adjust_population == 'Yes'){
+                map_base %>% addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = 1,
+                                         fillColor = ~pal(hate.post.per.cap), label = ~paste0(boro_cd)) %>%
+                    addLegend(pal = pal, values = ~hate.post.per.cap, opacity = 1.0,
+                              labFormat = labelFormat(transform = function(x) round(5e6*x)),title="Monthly total/5M people") %>%
+                    addProviderTiles("CartoDB.Positron") 
+            }else{
+                map_base %>% addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = 1,
+                                         fillColor = ~pal(hate.post), label = ~paste0(boro_cd)) %>%
+                    addLegend(pal = pal, values = ~hate.post, opacity = 1.0,
+                              title="Monthly total") %>%
+                    addProviderTiles("CartoDB.Positron")  
+            }
+        }else if(input$adjust_crime == 'Monthly average total arrest'){
+            if (input$adjust_population == 'Yes'){
+                map_base %>% addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = 1,
+                                         fillColor = ~pal(per.cap.post), label = ~paste0(boro_cd)) %>%
+                    addLegend(pal = pal, values = ~per.cap.post, opacity = 1.0,
+                              labFormat = labelFormat(transform = function(x) round(1e4*x)),title="Monthly total/10k people") %>%
+                    addProviderTiles("CartoDB.Positron") 
+            }else{
+                map_base %>% addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = 1,
+                                         fillColor = ~pal(total.post), label = ~paste0(boro_cd)) %>%
+                    addLegend(pal = pal, values = ~total.post, opacity = 1.0,
+                              title="Monthly total") %>%
+                    addProviderTiles("CartoDB.Positron")  
+            }
         }
-        
-    }) #right map plot
+    })
+    
+}
+)
 
-})
+    # end of tab
+
+
 
 
