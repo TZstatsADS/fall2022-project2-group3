@@ -58,13 +58,74 @@ shinyUI(
                       ) #Maps - Div closing
              ), #tabPanel maps closing
              #------------------------------- tab panel - Jinyang Cai ---------------------------------
-             
-             
-             
-             
+             tabPanel("Arrest Data", 
+                      fluidPage(
+                        titlePanel("Arrest Cases - Borough"), 
+                        sidebarLayout(
+                          sidebarPanel(
+                            prettyRadioButtons(
+                              inputId = "num_year_boro",
+                              label = "Year List:",
+                              choices = c(2018, 2019, 2020, 2021)
+                            )
+                          ),
+                          mainPanel(
+                            plotOutput(outputId = "year_boro")
+                          )
+                        )
+                      ),
+                      fluidPage(
+                        titlePanel("2020 Arrest Cases - Borough"), 
+                        sidebarLayout(
+                          sidebarPanel(
+                            prettyRadioButtons(
+                              inputId = "boro_input_twenty",
+                              label = "Borough List:",
+                              choices = c("Bronx", "Staten Island", "Brooklyn", "Manhattan", "Queens")
+                            )
+                          ),
+                          mainPanel(
+                            plotOutput(outputId = "boro_twenty")
+                          )
+                        )
+                      ),
+                      fluidPage(
+                        titlePanel("Top 10 Categories of Arrest"), 
+                        sidebarLayout(
+                          sidebarPanel(
+                            prettyRadioButtons(
+                              inputId = "pd_desc",
+                              label = "Categoty List:",
+                              choices = c("ASSAULT 3", "LARCENY,PETIT FROM OPEN AREAS,", "ASSAULT 2,1,UNCLASSIFIED", "TRAFFIC,UNCLASSIFIED MISDEMEAN", "ROBBERY,OPEN AREA UNCLASSIFIED",
+                                          "LARCENY,PETIT FROM OPEN AREAS,UNCLASSIFIED", "PUBLIC ADMINISTRATION,UNCLASSI", "LARCENY,GRAND FROM OPEN AREAS, UNATTENDED", "CONTROLLED SUBSTANCE, POSSESSI", "MENACING,UNCLASSIFIED")
+                            ),
+                            width = 4
+                          ),
+                          mainPanel(
+                            plotOutput(outputId = "desc_pd")
+                          )
+                        )
+                      ),
+                      fluidPage(
+                        titlePanel("Arrest Cases Divide by Features"), 
+                        sidebarLayout(
+                          sidebarPanel(
+                            prettyRadioButtons(
+                              inputId = "feature",
+                              label = "Feature List:",
+                              choices = c("Age Group", "Gender", "Level of Offense")
+                            )
+                          ),
+                          mainPanel(
+                            plotOutput(outputId = "feature_line")
+                          )
+                        )
+                      )
+             ),
              
              
              #------------------------------- tab panel - Jinyang Cai ---------------------------------
+             
              #------------------------------- tab panel - Homeless study ------------------------------
              tabPanel('Homeless Data',
                       icon = icon("map-marker-alt",verify_fa = FALSE), 

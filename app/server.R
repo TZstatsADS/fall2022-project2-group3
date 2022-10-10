@@ -53,6 +53,53 @@ if (!require("geojsonio")) {
 # df.arrest.proc <- read.csv("../processed/nyc_arrest_processed.csv")
 nyc.districts.proc <- geojson_read("../processed/nyc_community_districts_processed.geojson",
                                    what="sp")
+################## Start - Data preprocess for Arrest Data (tab 3) ##################
+# Read csv
+arrest.data <- read.csv("../processed/nyc_arrest_processed.csv")
+# Columns needed
+col.need <- c("ARREST_KEY", "ARREST_DATE", "PD_DESC", "OFNS_DESC", "LAW_CAT_CD", 
+              "ARREST_BORO", "JURISDICTION_CODE", "AGE_GROUP", "PERP_SEX", 
+              "PERP_RACE", "Latitude", "Longitude", "Lon_Lat")
+arrest.data <- arrest.data[col.need]
+# Change date format
+arrest.data$ARREST_DATE <- as.Date(arrest.data$ARREST_DATE)
+# Remove missing Value
+arrest.data <- arrest.data[arrest.data$PD_DESC!="",]
+# Replace values in ARREST_BORO
+arrest.data[arrest.data$ARREST_BORO=="B",]$ARREST_BORO = "Bronx"
+arrest.data[arrest.data$ARREST_BORO=="S",]$ARREST_BORO = "Staten Island"
+arrest.data[arrest.data$ARREST_BORO=="K",]$ARREST_BORO = "Brooklyn"
+arrest.data[arrest.data$ARREST_BORO=="M",]$ARREST_BORO = "Manhattan"
+arrest.data[arrest.data$ARREST_BORO=="Q",]$ARREST_BORO = "Queens"
+# Replace values in LAW_CAT_CD
+arrest.data[arrest.data$LAW_CAT_CD=="F",]$LAW_CAT_CD = "Felony"
+arrest.data[arrest.data$LAW_CAT_CD=="M",]$LAW_CAT_CD = "Misdemeanor"
+arrest.data[arrest.data$LAW_CAT_CD=="V",]$LAW_CAT_CD = "Violation"
+arrest.data[arrest.data$LAW_CAT_CD=="I",]$LAW_CAT_CD = "Infraction"
+arrest.data[arrest.data$LAW_CAT_CD=="",]$LAW_CAT_CD = "Not Classified"
+# Change type of categorical variables
+col.factor <- c("PD_DESC", "OFNS_DESC", "LAW_CAT_CD", 
+                "ARREST_BORO", "AGE_GROUP", "PERP_SEX", "PERP_RACE")
+
+for (col in col.factor) {
+  arrest.data[col] = as.factor(arrest.data[[col]])
+}
+# Add ARREST_YEAR and ARREST_MONTH to data
+arrest.data$ARREST_YEAR <- format(arrest.data$ARREST_DATE, "%Y")
+arrest.data$ARREST_MONTH <- format(arrest.data$ARREST_DATE, "%Y-%m")
+# Count number of arrest group by PD_DESC
+arrest.num.year <- arrest.data %>% 
+  group_by(PD_DESC) %>%
+  summarise(NUM = n()) %>%
+  arrange(desc(NUM))
+# TOP 10 categories of arrest
+top.pd <- as.list(arrest.num.year[1:10, "PD_DESC"])
+top.pd <- list(top.pd$PD_DESC)[[1]]
+top.pd.data <- arrest.data[arrest.data$PD_DESC %in% as.character(top.pd),]
+# Arrest data in 2020
+arrest.data.2020 <- arrest.data[(arrest.data$ARREST_YEAR==2020),]
+
+################## End - Data preprocess for Arrest Data (tab 3) ####################
 
 #     ####################### Data preprocess for homeless data ##################
 # read csv
@@ -165,6 +212,82 @@ function(input, output) {
             }
         }
     })
+    #------------------------------- Arrest study ---------------------------------
+    output$year_boro <- renderPlot({
+      ggplot(data=arrest.data[arrest.data$ARREST_YEAR==input$num_year_boro,])+
+        geom_bar(mapping=aes(x=ARREST_BORO))+
+        ylim(c(0, 80000))+
+        xlab("Arrest Borough")+
+        ylab("Number of Arrest Cases")+
+        ggtitle("Number of Arrest Cases v. Borough")+
+        theme(plot.title = element_text(hjust = 0.5))
+    })  
+    
+    output$boro_twenty <- renderPlot({
+      ggplot(data=arrest.data.2020[arrest.data.2020$ARREST_BORO==input$boro_input_twenty,])+
+        geom_bar(mapping=aes(x=ARREST_MONTH))+
+        ylim(c(0, 5000))+
+        xlab("Month")+
+        ylab("Number of Arrest Cases")+
+        ggtitle("Number of Arrest Cases in 2020 v. Borough")+
+        theme(plot.title = element_text(hjust = 0.5))
+      
+    })
+    
+    output$desc_pd <- renderPlot({
+      ggplot(data=top.pd.data[top.pd.data$PD_DESC==input$pd_desc,])+
+        geom_bar(mapping = aes(x=ARREST_YEAR))+
+        ylim(c(0, 30000))+
+        xlab("Arrest Year")+
+        ylab("Number of Arrest Cases")+
+        ggtitle("Number of Arrest Cases v. Category")+
+        theme(plot.title = element_text(hjust = 0.5))
+      
+    })
+    
+    output$feature_line <- renderPlot({
+      if (input$feature=="Age Group"){
+        arrest.data.age <- arrest.data %>%
+          group_by(ARREST_YEAR, AGE_GROUP) %>%
+          summarise(NUM = n())
+        ggplot(data=arrest.data.age)+
+          geom_line(mapping = aes(x=ARREST_YEAR, y=NUM, group=AGE_GROUP, color=AGE_GROUP))+
+          geom_point(mapping = aes(x=ARREST_YEAR, y=NUM, color=AGE_GROUP))+
+          labs(color = "Age Group")+
+          xlab("Arrest Year")+
+          ylab("Number of Cases")+
+          ggtitle("Number of Cases v. Age Group")+
+          theme(plot.title = element_text(hjust = 0.5))
+      }
+      else if (input$feature=="Gender"){
+        arrest.data.gender <- arrest.data %>%
+          group_by(ARREST_YEAR, PERP_SEX) %>%
+          summarise(NUM = n())
+        ggplot(data=arrest.data.gender)+
+          geom_line(mapping = aes(x=ARREST_YEAR, y=NUM, group=PERP_SEX, color=PERP_SEX))+
+          geom_point(mapping = aes(x=ARREST_YEAR, y=NUM, color=PERP_SEX))+
+          labs(color = "Perpetrator's Sex")+
+          xlab("Arrest Year")+
+          ylab("Number of Cases")+
+          ggtitle("Number of Cases v. Perpetrator's Sex")+
+          theme(plot.title = element_text(hjust = 0.5))
+      }
+      else {
+        arrest.data.offense <- arrest.data %>%
+          group_by(ARREST_YEAR, LAW_CAT_CD) %>%
+          summarise(NUM = n())
+        ggplot(data=arrest.data.offense)+
+          geom_line(mapping = aes(x=ARREST_YEAR, y=NUM, group=LAW_CAT_CD, color=LAW_CAT_CD))+
+          geom_point(mapping = aes(x=ARREST_YEAR, y=NUM, color=LAW_CAT_CD))+
+          labs(color = "Level of Offense")+
+          xlab("Arrest Year")+
+          ylab("Number of Cases")+
+          ggtitle("Number of Cases v. Level of Offense")+
+          theme(plot.title = element_text(hjust = 0.5))
+        
+      }
+    })
+    
     #------------------------------- Homeless study ---------------------------------
     
     output$BarPlot <- renderPlot({
