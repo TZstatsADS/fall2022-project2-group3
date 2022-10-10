@@ -56,7 +56,66 @@ shinyUI(
                                         
                           ), #Panel Control - Closing
                       ) #Maps - Div closing
-             ) #tabPanel maps closing
+             ), #tabPanel maps closing
+             #------------------------------- tab panel - Jinyang Cai ---------------------------------
+             
+             
+             
+             
+             
+             
+             #------------------------------- tab panel - Jinyang Cai ---------------------------------
+             #------------------------------- tab panel - Homeless study ------------------------------
+             tabPanel('Homeless Data',
+                      icon = icon("map-marker-alt",verify_fa = FALSE), 
+                      fluidPage(
+                        
+                        titlePanel("Infomation about categories of homeless"),
+                        
+                        sidebarLayout(
+                          sidebarPanel( 
+                            selectInput('Select1',
+                                        'Category',
+                                        c('Total Adults in Shelter' = 'Total.Adults.in.Shelter', 
+                                          'Total Children in Shelter' = 'Total.Children.in.Shelter', 
+                                          'Total Individuals in Shelter' = 'Total.Individuals.in.Shelter',
+                                          'Single Adult Men in Shelter' = 'Single.Adult.Men.in.Shelter',
+                                          'Single Adult Women in Shelter' = 'Single.Adult.Women.in.Shelter',
+                                          'Total Single Adults in Shelter' = 'Total.Single.Adults.in.Shelter',
+                                          'Adults in Families with Children in Shelter' = 'Adults.in.Families.with.Children.in.Shelter',
+                                          'Children in Families with Children in Shelter' = 'Children.in.Families.with.Children.in.Shelter',
+                                          'Total Individuals in Families with Children in Shelter' = 'Total.Individuals.in.Families.with.Children.in.Shelter',
+                                          'Individuals in Adult Families in Shelter' = 'Individuals.in.Adult.Families.in.Shelter'),
+                                        multiple = TRUE
+                                        )
+                            ),
+                          mainPanel(
+                            plotOutput('BarPlot'),
+                            plotOutput('TS')
+                            )# End of mainPanel
+                          )# End of sidebarLayout
+                      ), # End of fluidPage
+                      fluidPage(
+                        
+                        titlePanel("Homeless by borough"),
+                        
+                        sidebarLayout(
+                          sidebarPanel(
+                            selectInput('Select2',
+                                        'Category',
+                                        c('Bronx', 
+                                          'Brooklyn', 
+                                          'Manhattan',
+                                          'Queens',
+                                          'Staten Island'),
+                                        multiple = TRUE
+                                        )
+                            ),
+                          mainPanel( plotOutput('Borough') )
+                          )# End of sidebarLayout
+                        )# End of fluidPage
+                      )# End of tabPanel
+             #------------------------------- tab panel - Homeless study ------------------------------
              
              
              
