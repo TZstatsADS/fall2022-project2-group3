@@ -51,7 +51,6 @@ function(input, output) {
     
     # inferno
     pal <- colorNumeric("RdYlBu", NULL)
-    
     map_base <- leaflet(nyc.districts.proc,options = leafletOptions(minZoom = 10, maxZoom = 13)) %>%
         setView(-73.9834,40.7504,zoom = 12) %>% addTiles()
     

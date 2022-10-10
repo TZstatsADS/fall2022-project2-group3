@@ -25,10 +25,7 @@ shinyUI(
   navbarPage(strong("NYC Crime Study",style="color: white;"), 
              theme=shinytheme("superhero"), # select your themes https://rstudio.github.io/shinythemes/
              
-             tabPanel("Introduction",icon=icon("fa-duotone fa-house",verify_fa = FALSE),
-                      fluidPage(
-                        fluidRow(box(width = 15, title = "Introduction", status = "primary",
-                                     solidHeader = TRUE, h3("Covid-19 and NYC Crime"),) ) ) ) ,
+             tabPanel("Introduction",icon=icon("fa-duotone fa-house",verify_fa = FALSE)) ,
              #------------------------------- tab panel - Maps ---------------------------------
              tabPanel("Maps",
                       icon = icon("map-marker-alt",verify_fa = FALSE), #choose the icon for
