@@ -18,6 +18,11 @@ if (!require("leaflet.extras")) {
   install.packages("leaflet.extras")
   library(leaflet.extras)
 }
+if (!require("shinydashboard")) {
+  install.packages("shinydashboard")
+  library(shinydashboard)
+}
+# 
 
 # Define UI ----
                               
@@ -25,8 +30,21 @@ shinyUI(
   navbarPage(strong("NYC Crime Study",style="color: white;"), 
              theme=shinytheme("superhero"), # select your themes https://rstudio.github.io/shinythemes/
              
-             tabPanel("Introduction",icon=icon("fa-duotone fa-house",verify_fa = FALSE)) ,
-             #------------------------------- tab panel - Maps ---------------------------------
+             tabPanel("Introduction",icon=icon("fa-duotone fa-house",verify_fa = FALSE),
+                      fluidPage(
+                        fluidRow(
+                            column(6,h2("How civid affect crimes in NYC"),
+                                   h3("Jinyang Cai, Chengming He, Jiapeng Xu"),
+                                   p("In this project, we analyzed the effect of covid on NYC crime related data.")),
+                            column(6,img(class="img-polaroid",
+                                         src='https://images.unsplash.com/photo-1585236534996-3b117bec1b61?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2787&q=80',
+                                         style="width: 400px",align="right"),
+                            column(12,tags$small("Photo by Alec Favale on Unsplash",style = "text-align: right"),
+                                   offset=6)
+                                   )
+                        
+                      ))),
+             #----------------------------- tab panel - Maps Chengming He-------------------------------
              tabPanel("Maps",
                       icon = icon("map-marker-alt",verify_fa = FALSE), #choose the icon for
                       div(class = 'outer',
