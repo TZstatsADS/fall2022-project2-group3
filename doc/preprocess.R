@@ -159,6 +159,10 @@ for (i in 1:nrow(arrest.total.post)){
 
 
 ######################## Write processed data ##################################
+
+used_attr <- c("ARREST_DATE","PD_DESC","AGE_GROUP","PERP_SEX","Latitude","Longitude","poly_num",
+               "ARREST_BORO","LAW_CAT_CD")
+df <- df[used_attr]
 write.csv(df,"../processed/nyc_arrest_processed.csv")
 st_write(sf, dsn = "../processed/nyc_community_districts_processed.geojson",delete_dsn=T)
 

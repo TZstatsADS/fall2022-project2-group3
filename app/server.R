@@ -57,9 +57,9 @@ nyc.districts.proc <- geojson_read("../processed/nyc_community_districts_process
 # Read csv
 arrest.data <- read.csv("../processed/nyc_arrest_processed.csv")
 # Columns needed
-col.need <- c("ARREST_KEY", "ARREST_DATE", "PD_DESC", "OFNS_DESC", "LAW_CAT_CD", 
-              "ARREST_BORO", "JURISDICTION_CODE", "AGE_GROUP", "PERP_SEX", 
-              "PERP_RACE", "Latitude", "Longitude", "Lon_Lat")
+col.need <- c("ARREST_DATE", "PD_DESC", "LAW_CAT_CD", 
+              "ARREST_BORO", "AGE_GROUP", "PERP_SEX", 
+              "Latitude", "Longitude")
 arrest.data <- arrest.data[col.need]
 # Change date format
 arrest.data$ARREST_DATE <- as.Date(arrest.data$ARREST_DATE)
@@ -78,8 +78,8 @@ arrest.data[arrest.data$LAW_CAT_CD=="V",]$LAW_CAT_CD = "Violation"
 arrest.data[arrest.data$LAW_CAT_CD=="I",]$LAW_CAT_CD = "Infraction"
 arrest.data[arrest.data$LAW_CAT_CD=="",]$LAW_CAT_CD = "Not Classified"
 # Change type of categorical variables
-col.factor <- c("PD_DESC", "OFNS_DESC", "LAW_CAT_CD", 
-                "ARREST_BORO", "AGE_GROUP", "PERP_SEX", "PERP_RACE")
+col.factor <- c("PD_DESC", "LAW_CAT_CD", 
+                "ARREST_BORO", "AGE_GROUP", "PERP_SEX")
 
 for (col in col.factor) {
   arrest.data[col] = as.factor(arrest.data[[col]])
