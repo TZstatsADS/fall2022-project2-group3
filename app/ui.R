@@ -18,10 +18,7 @@ if (!require("leaflet.extras")) {
   install.packages("leaflet.extras")
   library(leaflet.extras)
 }
-if (!require("shinydashboard")) {
-  install.packages("shinydashboard")
-  library(shinydashboard)
-}
+
 # 
 
 # Define UI ----
