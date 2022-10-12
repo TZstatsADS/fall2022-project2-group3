@@ -20,7 +20,7 @@ The **learning goals** for this project is:
 Term: Fall 2022
 
 + Team 3
-+ **NYC Crime Study**:
++ [**NYC Crime Study**]( https://jiapeng-xu.shinyapps.io/NYC_Crime_Study/):
 	+ Jinyang Cai
 	+ Chengming He
 	+ Jiapeng Xu
