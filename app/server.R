@@ -167,7 +167,7 @@ function(input, output) {
                 map_base %>% addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = 1,
                                          fillColor = ~pal(per.cap.pre), label = ~paste0(boro_cd)) %>%
                     addLegend(pal = pal, values = ~per.cap.pre, opacity = 1.0,
-                              labFormat = labelFormat(transform = function(x) round(1e4*x)),title="Monthly total/10k people") %>%
+                              labFormat = labelFormat(transform = function(x) round(1e5*x)),title="Monthly total/100k people") %>%
                     addProviderTiles("CartoDB.Positron") 
             }else{
                 map_base %>% addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = 1,
@@ -176,6 +176,20 @@ function(input, output) {
                               title="Monthly total") %>%
                     addProviderTiles("CartoDB.Positron")  
             }
+        }else if (input$adjust_crime == 'Monthly average shooting incidents'){
+          if (input$adjust_population == 'Yes'){
+            map_base %>% addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = 1,
+                                     fillColor = ~pal(per.cap.shoot.pre), label = ~paste0(boro_cd)) %>%
+              addLegend(pal = pal, values = ~per.cap.shoot.pre, opacity = 1.0,
+                        labFormat = labelFormat(transform = function(x) round(1e5*x)),title="Monthly total/100k people") %>%
+              addProviderTiles("CartoDB.Positron")             
+          }else{
+            map_base %>% addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = 1,
+                                     fillColor = ~pal(total.shoot.pre), label = ~paste0(boro_cd)) %>%
+              addLegend(pal = pal, values = ~total.shoot.pre, opacity = 1.0,
+                        title="Monthly total") %>%
+              addProviderTiles("CartoDB.Positron")              
+          }
         }
     })
 
@@ -201,7 +215,7 @@ function(input, output) {
                 map_base %>% addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = 1,
                                          fillColor = ~pal(per.cap.post), label = ~paste0(boro_cd)) %>%
                     addLegend(pal = pal, values = ~per.cap.post, opacity = 1.0,
-                              labFormat = labelFormat(transform = function(x) round(1e4*x)),title="Monthly total/10k people") %>%
+                              labFormat = labelFormat(transform = function(x) round(1e5*x)),title="Monthly total/100k people") %>%
                     addProviderTiles("CartoDB.Positron") 
             }else{
                 map_base %>% addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = 1,
@@ -210,6 +224,20 @@ function(input, output) {
                               title="Monthly total") %>%
                     addProviderTiles("CartoDB.Positron")  
             }
+        }else if (input$adjust_crime == 'Monthly average shooting incidents'){
+          if (input$adjust_population == 'Yes'){
+            map_base %>% addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = 1,
+                                     fillColor = ~pal(per.cap.shoot.post), label = ~paste0(boro_cd)) %>%
+              addLegend(pal = pal, values = ~per.cap.shoot.post, opacity = 1.0,
+                        labFormat = labelFormat(transform = function(x) round(1e5*x)),title="Monthly total/100k people") %>%
+              addProviderTiles("CartoDB.Positron")             
+          }else{
+            map_base %>% addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = 1,
+                                     fillColor = ~pal(total.shoot.post), label = ~paste0(boro_cd)) %>%
+              addLegend(pal = pal, values = ~total.shoot.post, opacity = 1.0,
+                        title="Monthly total") %>%
+              addProviderTiles("CartoDB.Positron")              
+          }
         }
     })
     #------------------------------- Arrest study ---------------------------------

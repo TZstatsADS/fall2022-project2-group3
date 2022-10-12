@@ -33,9 +33,24 @@ shinyUI(
              tabPanel("Introduction",icon=icon("fa-duotone fa-house",verify_fa = FALSE),
                       fluidPage(
                         fluidRow(
-                            column(6,h2("How civid affect crimes in NYC"),
-                                   h3("Jinyang Cai, Chengming He, Jiapeng Xu"),
-                                   p("In this project, we analyzed the effect of covid on NYC crime related data.")),
+                            column(6,h3("How Covid affect crimes in NYC"),
+                                   h6("Jinyang Cai, Chengming He, Jiapeng Xu"),
+                                   h4("1. Introduction"),
+                                   p("In this project, we examined changes in crime-related data in New York City since the start of the COVID-19 pandemic in 2020, with a special emphasis on shooting incidents, hate crimes, homeless data, and total arrests.
+                                     Using this web application, users can visualize data interactively and inspect the effects of the pandemic."),
+                                   h4("2. Data source "),
+                                   p(tags$a(href="https://data.cityofnewyork.us/Public-Safety/NYPD-Arrests-Data-Historic-/8h9b-rp9u", "NYC historical arrest")),
+                                   p(tags$a(href="https://data.cityofnewyork.us/Public-Safety/NYPD-Hate-Crimes/bqiq-cu78", "NYC hate crime")),
+                                   p(tags$a(href="https://data.cityofnewyork.us/Social-Services/Directory-Of-Homeless-Drop-In-Centers/bmxf-3rd4", "NYC homeless")),
+                                   p(tags$a(href="https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Historic-/833y-fsy8","NYC historical shooting")),
+                                   h4("3.App usage"),
+                                   HTML("<b style=\"font-family:courier; color: Coral\" >Maps</b>",
+                                        "<p>Visualize hate crimes, total arrests, and shooting incidents in NYC community districts pre-covid and post-covid.</p>"),
+                                   HTML("<b style=\"font-family:courier; color: Coral\" >Arrest Data</b>",
+                                        "<p>Visualize total arrest as time series with options to inspect different categories.</p>"),
+                                   HTML("<b style=\"font-family:courier; color: Coral\" >Homeless Data</b>",
+                                        "<p>Visualize homeless data as time series with options to inspect different categories.</p>")
+                                   ),
                             column(6,img(class="img-polaroid",
                                          src='https://images.unsplash.com/photo-1585236534996-3b117bec1b61?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2787&q=80',
                                          style="width: 400px",align="right"),
@@ -62,6 +77,7 @@ shinyUI(
                                         awesomeRadio("adjust_crime", 
                                                      label="Crime",
                                                      choices =c("Monthly average total arrest",
+                                                                "Monthly average shooting incidents",
                                                                 "Monthly average hate crime"), 
                                                      selected = "Monthly average total arrest",
                                                      status = "warning"),
@@ -76,7 +92,7 @@ shinyUI(
                       ) #Maps - Div closing
              ), #tabPanel maps closing
              #------------------------------- tab panel - Jinyang Cai ---------------------------------
-             tabPanel("Arrest Data", 
+             tabPanel("Arrest Data", icon = icon("fa-duotone fa-circle-info",verify_fa = FALSE),
                       fluidPage(
                         titlePanel("Arrest Cases - Borough"), 
                         sidebarLayout(
@@ -146,7 +162,7 @@ shinyUI(
              
              #------------------------------- tab panel - Homeless study ------------------------------
              tabPanel('Homeless Data',
-                      icon = icon("map-marker-alt",verify_fa = FALSE), 
+                      icon = icon("fa-doutone fa-tag",verify_fa = FALSE), 
                       fluidPage(
                         
                         titlePanel("Infomation about categories of homeless"),
